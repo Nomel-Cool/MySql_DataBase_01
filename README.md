@@ -1,2 +1,3 @@
 # MySql_DataBase_01
-123
+三个lib文件是补丁，mysql官方的libmysql.dll不顶用，然后还有另外两个lib前缀的文件也一同丢到syswow64里面
+配置还是很基础的
