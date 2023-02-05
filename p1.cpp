@@ -1,39 +1,39 @@
 #include <Windows.h>
-#include <WinSock.h>  //Ò»¶¨Òª°üº¬Õâ¸ö 
+#include <WinSock.h>  //ä¸€å®šè¦åŒ…å«è¿™ä¸ª 
 #include <stdio.h>  
-#include "include/mysql.h"    //ÒıÈëmysqlÍ·ÎÄ¼ş(Ò»ÖÖ·½Ê½ÊÇÔÚvc++Ä¿Â¼ÀïÃæÉèÖÃ£¬Ò»ÖÖÊÇÎÄ¼ş¼Ğ¿½µ½¹¤³ÌÄ¿Â¼£¬È»ºóÕâÑù°üº¬)  
+#include "include/mysql.h"    //å¼•å…¥mysqlå¤´æ–‡ä»¶(ä¸€ç§æ–¹å¼æ˜¯åœ¨vc++ç›®å½•é‡Œé¢è®¾ç½®ï¼Œä¸€ç§æ˜¯æ–‡ä»¶å¤¹æ‹·åˆ°å·¥ç¨‹ç›®å½•ï¼Œç„¶åè¿™æ ·åŒ…å«)  
 
 #include <algorithm>
 #include <vector>
 #include <string>
 #include <time.h>
 #include <iostream>
-//°üº¬¸½¼ÓÒÀÀµÏî£¬Ò²¿ÉÒÔÔÚ¹¤³Ì--ÊôĞÔÀïÃæÉèÖÃ  
+//åŒ…å«é™„åŠ ä¾èµ–é¡¹ï¼Œä¹Ÿå¯ä»¥åœ¨å·¥ç¨‹--å±æ€§é‡Œé¢è®¾ç½®  
 #pragma comment(lib,"wsock32.lib") 
 #pragma comment(lib,"libmysql.lib")
 
 using namespace std;
 
 
-MYSQL mysql; //mysqlÁ¬½Ó
-MYSQL_FIELD* fd;  //×Ö¶ÎÁĞÊı×é
-char field[32][32];  //´æ×Ö¶ÎÃû¶şÎ¬Êı×é
-MYSQL_RES* res; //Õâ¸ö½á¹¹´ú±í·µ»ØĞĞµÄÒ»¸ö²éÑ¯½á¹û¼¯
-MYSQL_ROW column; //Ò»¸öĞĞÊı¾İµÄÀàĞÍ°²È«(type-safe)µÄ±íÊ¾£¬±íÊ¾Êı¾İĞĞµÄÁĞ
-string query; //²éÑ¯Óï¾ä
+MYSQL mysql; //mysqlè¿æ¥
+MYSQL_FIELD* fd;  //å­—æ®µåˆ—æ•°ç»„
+char field[32][32];  //å­˜å­—æ®µåäºŒç»´æ•°ç»„
+MYSQL_RES* res; //è¿™ä¸ªç»“æ„ä»£è¡¨è¿”å›è¡Œçš„ä¸€ä¸ªæŸ¥è¯¢ç»“æœé›†
+MYSQL_ROW column; //ä¸€ä¸ªè¡Œæ•°æ®çš„ç±»å‹å®‰å…¨(type-safe)çš„è¡¨ç¤ºï¼Œè¡¨ç¤ºæ•°æ®è¡Œçš„åˆ—
+string query; //æŸ¥è¯¢è¯­å¥
 
-//º¯ÊıÉùÃ÷ 
+//å‡½æ•°å£°æ˜ 
 bool ConnectDatabase();
 void FreeConnect();
-void GetToday(int& year,int& mon,int& day,int& hour,int& min,int& sec);//µ±ÈÕÈÕÆÚ£¨ÄêÔÂÈÕÊ±·ÖÃë£©
-vector<string> GetColumnName(string tablename);//»ñÈ¡µ±Ç°±íËùÓĞ×Ö¶ÎÃû
-int GetColumnNum(string tablename);//»ñÈ¡µ±Ç°°¡±í×Ö¶ÎÊıÁ¿
-void AutoUpdate(string tablename);//Ã¿ÈÕ¸üĞÂ×Ü±í
-bool IsClockin(string crewname);//²éÑ¯ÊÇ·ñ´ò¿¨
-bool ClockIn(string crewname);//½øĞĞ½ñÈÕ´ò¿¨
-bool ToClockIn(string managername, vector<string> abscentlist);//ÖÜÈÕ´ò¿¨
-bool AddPerson(string managername, string crewname);//Ôö¼ÓÒ»¸öÈËÔ±
-bool Deduction(string managername,vector<string> columnname);//¶ş¼¶±í×Ô¶¯¿Û¹¤Ê±£¬ÅäºÏÒ»¼¶±í×öÓ³Éä
+void GetToday(int& year,int& mon,int& day,int& hour,int& min,int& sec);//å½“æ—¥æ—¥æœŸï¼ˆå¹´æœˆæ—¥æ—¶åˆ†ç§’ï¼‰
+vector<string> GetColumnName(string tablename);//è·å–å½“å‰è¡¨æ‰€æœ‰å­—æ®µå
+int GetColumnNum(string tablename);//è·å–å½“å‰å•Šè¡¨å­—æ®µæ•°é‡
+void AutoUpdate(string tablename);//æ¯æ—¥æ›´æ–°æ€»è¡¨
+bool IsClockin(string crewname);//æŸ¥è¯¢æ˜¯å¦æ‰“å¡
+bool ClockIn(string crewname);//è¿›è¡Œä»Šæ—¥æ‰“å¡
+bool ToClockIn(string managername, vector<string> abscentlist);//å‘¨æ—¥æ‰“å¡
+bool AddPerson(string managername, string crewname);//å¢åŠ ä¸€ä¸ªäººå‘˜
+bool Deduction(string managername,vector<string> columnname);//äºŒçº§è¡¨è‡ªåŠ¨æ‰£å·¥æ—¶ï¼Œé…åˆä¸€çº§è¡¨åšæ˜ å°„
 bool Show(string tablename);
 
 enum classType
@@ -51,14 +51,18 @@ int main(int argc, char** argv)
 	string table;
 	string absl;
 	vector<string> ablist;
-	if (!ConnectDatabase())return -1;
+	if (!ConnectDatabase())
+	{
+		system("pause");
+		return -1;
+	}
 	AutoUpdate("gp");
-	cout << "ÇëÊäÈë¹ÜÀíÔ±Ãû³Æ£º";
+	cout << "è¯·è¾“å…¥ç®¡ç†å‘˜åç§°ï¼š";
 	cin >> manager;
-	cout << "ÇëÎÊÊÇÒªÔÚĞÇÆÚÁù/ĞÇÆÚÌì´ò¿¨£¿(Sat|Sun)£º";
+	cout << "è¯·é—®æ˜¯è¦åœ¨æ˜ŸæœŸå…­/æ˜ŸæœŸå¤©æ‰“å¡ï¼Ÿ(Sat|Sun)ï¼š";
 	cin >> table;
-	cout << "ÇëÊäÈëÈ±Ï¯ÈËÔ±Ãû³Æ£¬ÓÃ¿Õ¸ñ¸ô¿ª (Ã»ÓĞÔòÈÏÎªÈ«Æë)";
-	char key_space = getchar();//³ÔÒ»¸ö»Ø³µ
+	cout << "è¯·è¾“å…¥ç¼ºå¸­äººå‘˜åç§°ï¼Œç”¨ç©ºæ ¼éš”å¼€ (æ²¡æœ‰åˆ™è®¤ä¸ºå…¨é½)";
+	char key_space = getchar();//åƒä¸€ä¸ªå›è½¦
 	getline(cin, absl);
 	absl += ' ';
 	string tmp;
@@ -91,19 +95,19 @@ int main(int argc, char** argv)
 
 
 
-//Á¬½ÓÊı¾İ¿â  
+//è¿æ¥æ•°æ®åº“  
 bool ConnectDatabase()
 {
-	//³õÊ¼»¯mysql  
-	mysql_init(&mysql);  //Á¬½Ómysql£¬Êı¾İ¿â  
+	//åˆå§‹åŒ–mysql  
+	mysql_init(&mysql);  //è¿æ¥mysqlï¼Œæ•°æ®åº“  
 	const char host[] = "localhost";
 	const char user[] = "root";
 	const char psw[] = "bichang123";
 	const char database[] = "BC_ClockIn";
 	const int port = 3306;
-	//·µ»ØfalseÔòÁ¬½ÓÊ§°Ü£¬·µ»ØtrueÔòÁ¬½Ó³É¹¦  
+	//è¿”å›falseåˆ™è¿æ¥å¤±è´¥ï¼Œè¿”å›trueåˆ™è¿æ¥æˆåŠŸ  
 	if (!(mysql_real_connect(&mysql, host, user, psw, database, port, NULL, 0)))
-		//ÖĞ¼ä·Ö±ğÊÇÖ÷»ú£¬ÓÃ»§Ãû£¬ÃÜÂë£¬Êı¾İ¿âÃû£¬¶Ë¿ÚºÅ£¨¿ÉÒÔĞ´Ä¬ÈÏ0»òÕß3306µÈ£©£¬¿ÉÒÔÏÈĞ´³É²ÎÊıÔÙ´«½øÈ¥  
+		//ä¸­é—´åˆ†åˆ«æ˜¯ä¸»æœºï¼Œç”¨æˆ·åï¼Œå¯†ç ï¼Œæ•°æ®åº“åï¼Œç«¯å£å·ï¼ˆå¯ä»¥å†™é»˜è®¤0æˆ–è€…3306ç­‰ï¼‰ï¼Œå¯ä»¥å…ˆå†™æˆå‚æ•°å†ä¼ è¿›å»  
 	{
 		printf("Error connecting to database:%s\n", mysql_error(&mysql));
 		return false;
@@ -114,21 +118,21 @@ bool ConnectDatabase()
 		return true;
 	}
 }
-//ÊÍ·Å×ÊÔ´  
+//é‡Šæ”¾èµ„æº  
 void FreeConnect()
 {
-	mysql_free_result(res);  //ÊÍ·ÅÒ»¸ö½á¹û¼¯ºÏÊ¹ÓÃµÄÄÚ´æ¡£
-	mysql_close(&mysql);	 //¹Ø±ÕÒ»¸ö·şÎñÆ÷Á¬½Ó¡£
+	mysql_free_result(res);  //é‡Šæ”¾ä¸€ä¸ªç»“æœé›†åˆä½¿ç”¨çš„å†…å­˜ã€‚
+	mysql_close(&mysql);	 //å…³é—­ä¸€ä¸ªæœåŠ¡å™¨è¿æ¥ã€‚
 }
 
-/***************************Êı¾İ¿â²Ù×÷***********************************/
-//ÆäÊµËùÓĞµÄÊı¾İ¿â²Ù×÷¶¼ÊÇÏÈĞ´¸ösqlÓï¾ä£¬È»ºóÓÃmysql_query(&mysql,query)À´Íê³É£¬°üÀ¨´´½¨Êı¾İ¿â»ò±í£¬ÔöÉ¾¸Ä²é  
-//²éÑ¯Êı¾İ  
+/***************************æ•°æ®åº“æ“ä½œ***********************************/
+//å…¶å®æ‰€æœ‰çš„æ•°æ®åº“æ“ä½œéƒ½æ˜¯å…ˆå†™ä¸ªsqlè¯­å¥ï¼Œç„¶åç”¨mysql_query(&mysql,query)æ¥å®Œæˆï¼ŒåŒ…æ‹¬åˆ›å»ºæ•°æ®åº“æˆ–è¡¨ï¼Œå¢åˆ æ”¹æŸ¥  
+//æŸ¥è¯¢æ•°æ®  
 //bool QueryDatabase2()
 //{
 //	mysql_query(&mysql, "set names gbk");
-//	//·µ»Ø0 ²éÑ¯³É¹¦£¬·µ»Ø1²éÑ¯Ê§°Ü  
-//	if (mysql_query(&mysql, "select * from user"))        //Ö´ĞĞSQLÓï¾ä  
+//	//è¿”å›0 æŸ¥è¯¢æˆåŠŸï¼Œè¿”å›1æŸ¥è¯¢å¤±è´¥  
+//	if (mysql_query(&mysql, "select * from user"))        //æ‰§è¡ŒSQLè¯­å¥  
 //	{
 //		printf("Query failed (%s)\n", mysql_error(&mysql));
 //		return false;
@@ -138,12 +142,12 @@ void FreeConnect()
 //		printf("query success\n");
 //	}
 //	res = mysql_store_result(&mysql);
-//	//´òÓ¡Êı¾İĞĞÊı  
+//	//æ‰“å°æ•°æ®è¡Œæ•°  
 //	printf("number of dataline returned: %d\n", mysql_affected_rows(&mysql));
-//	for (int i = 0; fd = mysql_fetch_field(res); i++)  //»ñÈ¡×Ö¶ÎÃû  
+//	for (int i = 0; fd = mysql_fetch_field(res); i++)  //è·å–å­—æ®µå  
 //		strcpy_s(field[i], fd->name);
-//	int j = mysql_num_fields(res);  // »ñÈ¡ÁĞÊı  
-//	for (int i = 0; i < j; i++)  //´òÓ¡×Ö¶Î  
+//	int j = mysql_num_fields(res);  // è·å–åˆ—æ•°  
+//	for (int i = 0; i < j; i++)  //æ‰“å°å­—æ®µ  
 //		printf("%10s\t", field[i]);
 //	printf("\n");
 //	while (column = mysql_fetch_row(res))
@@ -155,14 +159,14 @@ void FreeConnect()
 //	return true;
 //}
 //
-////É¾³ıÊı¾İ  
+////åˆ é™¤æ•°æ®  
 //bool DeleteData()
 //{
 //	/*sprintf(query, "delete from user where id=6");*/
 //	char query[100];
 //	printf("please input the sql:\n");
-//	//gets(query);  //ÕâÀïÊÖ¶¯ÊäÈësqlÓï¾ä  
-//	if (mysql_query(&mysql, query))        //Ö´ĞĞSQLÓï¾ä  
+//	//gets(query);  //è¿™é‡Œæ‰‹åŠ¨è¾“å…¥sqlè¯­å¥  
+//	if (mysql_query(&mysql, query))        //æ‰§è¡ŒSQLè¯­å¥  
 //	{
 //		printf("Query failed (%s)\n", mysql_error(&mysql));
 //		return false;
@@ -188,14 +192,14 @@ void GetToday(int& year,int& mon,int& day,int& hour,int& min,int& sec)
 }
 int GetColumnNum(string tablename)
 {
-	//ÏÈ²é±íÀïÃæÓĞ¶àÉÙ×Ö¶Î
+	//å…ˆæŸ¥è¡¨é‡Œé¢æœ‰å¤šå°‘å­—æ®µ
 	int num = 0;
 	string query_count = "select count(*) from information_schema.columns where table_name = " + (string)"\'" + tablename + (string)"\'";
-	if (mysql_query(&mysql, query_count.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, query_count.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
-	if (!(res = mysql_store_result(&mysql)))    //»ñµÃsqlÓï¾ä½áÊøºó·µ»ØµÄ½á¹û¼¯  
+	if (!(res = mysql_store_result(&mysql)))    //è·å¾—sqlè¯­å¥ç»“æŸåè¿”å›çš„ç»“æœé›†  
 	{
 		printf("Couldn't get result from %s\n", mysql_error(&mysql));
 		return false;
@@ -222,11 +226,11 @@ vector<string> GetColumnName(string tablename)
 	*/
 	vector<string> ret;
 	string query_colname = "select COLUMN_NAME from INFORMATION_SCHEMA.Columns where table_name= " + (string)"\'" + tablename + (string)"\'";
-	if (mysql_query(&mysql, query_colname.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, query_colname.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return ret;
 	}
-	if (!(res = mysql_store_result(&mysql)))    //»ñµÃsqlÓï¾ä½áÊøºó·µ»ØµÄ½á¹û¼¯  
+	if (!(res = mysql_store_result(&mysql)))    //è·å¾—sqlè¯­å¥ç»“æŸåè¿”å›çš„ç»“æœé›†  
 	{
 		printf("Couldn't get result from %s\n", mysql_error(&mysql));
 		return ret;
@@ -235,7 +239,7 @@ vector<string> GetColumnName(string tablename)
 	{
 		ret.push_back(*column);
 	}
-	//ÓÉÓÚmysqlµÄÔ­Òò£¬Ö÷¼ü×Ö¶Î»á·Åµ½×îºóÏÔÊ¾£¬ĞèÒªÊÖ¶¯×öµ÷Õû
+	//ç”±äºmysqlçš„åŸå› ï¼Œä¸»é”®å­—æ®µä¼šæ”¾åˆ°æœ€åæ˜¾ç¤ºï¼Œéœ€è¦æ‰‹åŠ¨åšè°ƒæ•´
 	//std::rotate(ret.begin(), ret.end() - 1, ret.end());
 	return ret;
 }
@@ -246,7 +250,7 @@ void AutoUpdate(string tablename)
 	GetToday(year, mon, day, hour, min, sec);
 	string time = to_string(year) + "-" + to_string(mon) + "-" + to_string(day);
 	string isToday = "select * from gp where time = " + time;
-	if (mysql_query(&mysql, isToday.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, isToday.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return;
 	}
@@ -259,7 +263,7 @@ void AutoUpdate(string tablename)
 	{
 		num++;
 	}
-	if (num != 0)return;	//Èç¹ûÓĞÊı¾İËµÃ÷ÒÑ¾­¸üĞÂ¹ıÖ±½ÓÍË³öº¯Êı 
+	if (num != 0)return;	//å¦‚æœæœ‰æ•°æ®è¯´æ˜å·²ç»æ›´æ–°è¿‡ç›´æ¥é€€å‡ºå‡½æ•° 
 	vector<string> colname = GetColumnName(tablename);
 	query = "insert into " + tablename + " select time + 1";
 	for (int i = 1; i < colname.size(); i++)
@@ -273,16 +277,16 @@ void AutoUpdate(string tablename)
 bool Deduction(string managername,vector<string> columnname)
 {
 	string query_1 = "select * from " + managername;
-	if (mysql_query(&mysql, query_1.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, query_1.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
-	if (!(res = mysql_store_result(&mysql)))    //»ñµÃsqlÓï¾ä½áÊøºó·µ»ØµÄ½á¹û¼¯  
+	if (!(res = mysql_store_result(&mysql)))    //è·å¾—sqlè¯­å¥ç»“æŸåè¿”å›çš„ç»“æœé›†  
 	{
 		printf("Couldn't get result from %s\n", mysql_error(&mysql));
 		return false;
 	}
-	//»ñÈ¡×îĞÂµÄÒ»ÌõÓÃÓÚ¼õ¹¤Ê±
+	//è·å–æœ€æ–°çš„ä¸€æ¡ç”¨äºå‡å·¥æ—¶
 	MYSQL_ROW reserved = column;
 	while (column = mysql_fetch_row(res))
 	{
@@ -295,9 +299,9 @@ bool Deduction(string managername,vector<string> columnname)
 	for (int i = 1; i < num; i++)
 	{
 		query_deduct = "update gp set ";
-		//ÏÈÇ¿×ªchar*ÔÙÓÃatoi×ªÕûĞÍ²ÅÄÜÔËËã
+		//å…ˆå¼ºè½¬char*å†ç”¨atoiè½¬æ•´å‹æ‰èƒ½è¿ç®—
 		query_deduct += columnname[i] + "=" + columnname[i] + "-" + to_string((atoi((char*)reserved[i]) * 2)) + " where time = '" + reserved[0] + (string)"\'";
-		if (mysql_query(&mysql, query_deduct.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+		if (mysql_query(&mysql, query_deduct.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 			cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 			return false;
 		}
@@ -306,36 +310,36 @@ bool Deduction(string managername,vector<string> columnname)
 }
 bool ToClockIn(string managername, vector<string> abscentlist)
 {
-	//ÏÈ»ñÈ¡´ò¿¨Ê±¼ä
+	//å…ˆè·å–æ‰“å¡æ—¶é—´
 	int year, mon, day, hour, min, sec;
 	GetToday(year, mon, day, hour, min, sec);
 	string time = to_string(year) + "-" + to_string(mon) + "-" + to_string(day) + " " + to_string(hour) + ":" + to_string(min) + ":" + to_string(sec);
 
 
-	//ÔÙÖÆ×÷²éÑ¯Óï¾ä
+	//å†åˆ¶ä½œæŸ¥è¯¢è¯­å¥
 	vector<string> colname = GetColumnName(managername);
 	string query_insert = "insert into " + managername + " (";
-	for (int i = 0; i < colname.size() - 1; i++)//ÕâÀï×îºóÒ»¸ö¶ÎÃûÊÖ¶¯²¹Æë
+	for (int i = 0; i < colname.size() - 1; i++)//è¿™é‡Œæœ€åä¸€ä¸ªæ®µåæ‰‹åŠ¨è¡¥é½
 	{
 		query_insert += (colname[i] + ",");
 	}
-	query_insert += colname[colname.size() - 1];//×îºóÒ»¾äµ¥¶ÀÌí¼Ó
+	query_insert += colname[colname.size() - 1];//æœ€åä¸€å¥å•ç‹¬æ·»åŠ 
 
 	query_insert += ") values (\'" + time + "\',";
-	for (int i = 1; i < colname.size() - 1; i++)//ÕâÀï×îºóÒ»¸öÒªÊÕÎ²£¬ËùÒÔµ¥¶À´¦Àí-1
+	for (int i = 1; i < colname.size() - 1; i++)//è¿™é‡Œæœ€åä¸€ä¸ªè¦æ”¶å°¾ï¼Œæ‰€ä»¥å•ç‹¬å¤„ç†-1
 	{
-		if (find(abscentlist.begin(), abscentlist.end(), colname[i]) == abscentlist.end())//³öÏ¯ÁË
+		if (find(abscentlist.begin(), abscentlist.end(), colname[i]) == abscentlist.end())//å‡ºå¸­äº†
 			query_insert += ("1,");
 		else
 			query_insert += ("0,");
 	}
-	if (find(abscentlist.begin(), abscentlist.end(), colname[colname.size() - 1]) == abscentlist.end())//³öÏ¯ÁË
+	if (find(abscentlist.begin(), abscentlist.end(), colname[colname.size() - 1]) == abscentlist.end())//å‡ºå¸­äº†
 		query_insert += "1)";
 	else
 		query_insert += "0)";
 
-	//ÕâÑù¾ÍÖÆ×÷³öÁË°´ÕÕ²»³öÏ¯Ãûµ¥À´ÖÆ×÷²åÈëÖµ
-	if (mysql_query(&mysql, query_insert.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	//è¿™æ ·å°±åˆ¶ä½œå‡ºäº†æŒ‰ç…§ä¸å‡ºå¸­åå•æ¥åˆ¶ä½œæ’å…¥å€¼
+	if (mysql_query(&mysql, query_insert.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
@@ -345,110 +349,110 @@ bool ToClockIn(string managername, vector<string> abscentlist)
 
 bool IsClockin(string crewname)
 {
-	query = "select * from crew where name = " + (string)"\'" + crewname + (string)"\'"; //Ö´ĞĞ²éÑ¯Óï¾ä£¬ÕâÀïÊÇ²éÑ¯ËùÓĞ£¬userÊÇ±íÃû£¬²»ÓÃ¼ÓÒıºÅ£¬ÓÃstrcpyÒ²¿ÉÒÔ 
-	mysql_query(&mysql, "set names gbk"); //ÉèÖÃ±àÂë¸ñÊ½£¨SET NAMES GBKÒ²ĞĞ£©£¬·ñÔòcmdÏÂÖĞÎÄÂÒÂë  
-	//·µ»Ø0 ²éÑ¯³É¹¦£¬·µ»Ø1²éÑ¯Ê§°Ü  
-	if (mysql_query(&mysql, query.c_str())){        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	query = "select * from crew where name = " + (string)"\'" + crewname + (string)"\'"; //æ‰§è¡ŒæŸ¥è¯¢è¯­å¥ï¼Œè¿™é‡Œæ˜¯æŸ¥è¯¢æ‰€æœ‰ï¼Œuseræ˜¯è¡¨åï¼Œä¸ç”¨åŠ å¼•å·ï¼Œç”¨strcpyä¹Ÿå¯ä»¥ 
+	mysql_query(&mysql, "set names gbk"); //è®¾ç½®ç¼–ç æ ¼å¼ï¼ˆSET NAMES GBKä¹Ÿè¡Œï¼‰ï¼Œå¦åˆ™cmdä¸‹ä¸­æ–‡ä¹±ç   
+	//è¿”å›0 æŸ¥è¯¢æˆåŠŸï¼Œè¿”å›1æŸ¥è¯¢å¤±è´¥  
+	if (mysql_query(&mysql, query.c_str())){        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
-	//»ñÈ¡½á¹û¼¯  
-	if (!(res = mysql_store_result(&mysql)))    //»ñµÃsqlÓï¾ä½áÊøºó·µ»ØµÄ½á¹û¼¯  
+	//è·å–ç»“æœé›†  
+	if (!(res = mysql_store_result(&mysql)))    //è·å¾—sqlè¯­å¥ç»“æŸåè¿”å›çš„ç»“æœé›†  
 	{
 		printf("Couldn't get result from %s\n", mysql_error(&mysql));
 		return false;
 	}
-	//²éÑ¯½á¹ûÊıÁ¿
+	//æŸ¥è¯¢ç»“æœæ•°é‡
 	if (mysql_affected_rows(&mysql) == 0)
 	{
 		cout << "There is no data about " + crewname + " inside the table!" << endl;
 		return false;
 	}
 	MYSQL_ROW reserved = column;
-	while (column = mysql_fetch_row(res))   //»ñÈ¡×îĞÂÒ»ĞĞ 
+	while (column = mysql_fetch_row(res))   //è·å–æœ€æ–°ä¸€è¡Œ 
 	{
-		//printf("%20s\t%20s\t%30s\t%12s\n", column[0], column[1], column[2], column[3]);//columnÊÇÁĞÊı×é
+		//printf("%20s\t%20s\t%30s\t%12s\n", column[0], column[1], column[2], column[3]);//columnæ˜¯åˆ—æ•°ç»„
 		reserved = column;
 	}
-	//¶Ô±Èµ±Ç°Ê±¼äÅĞ¶ÏÊÇ·ñ´ò¿¨
+	//å¯¹æ¯”å½“å‰æ—¶é—´åˆ¤æ–­æ˜¯å¦æ‰“å¡
 	int year_now, mon_now, day_now, hour_now, min_now, sec_now;
 	GetToday(year_now, mon_now, day_now, hour_now, min_now, sec_now);
 	int mon = (reserved[2][5] - 48) * 10 + (reserved[2][6] - 48);
 	int day = (reserved[2][8] - 48) * 10 + (reserved[2][9] - 48);
 	if ((mon == mon_now) && (day == day_now) && reserved[3])
 	{
-		//cout << crewname+"½ñÈÕÒÑ´ò¿¨" << endl;
+		//cout << crewname+"ä»Šæ—¥å·²æ‰“å¡" << endl;
 		return true;
 	}
-	//cout << crewname + "½ñÈÕÎ´´ò¿¨" << endl;
+	//cout << crewname + "ä»Šæ—¥æœªæ‰“å¡" << endl;
 	return false;
 }
 
 bool ClockIn(string managername)
 {
-	//¼ì²éÊÇ·ñÒÑ´ò¿¨
+	//æ£€æŸ¥æ˜¯å¦å·²æ‰“å¡
 	if (IsClockin(managername))
 	{
-		cout << managername + "½ñÈÕÒÑ´ò¿¨£¬ÎŞĞèÔÙ´ò£¬ÈçÓĞÌØÊâĞèÒªÇëÕÒ¹ÜÀíÔ±" << endl;
+		cout << managername + "ä»Šæ—¥å·²æ‰“å¡ï¼Œæ— éœ€å†æ‰“ï¼Œå¦‚æœ‰ç‰¹æ®Šéœ€è¦è¯·æ‰¾ç®¡ç†å‘˜" << endl;
 		return false;
 	}
-	//Î´´ò¿¨¾ÍÖ´ĞĞInsertÖ¸Áî£¬Íùcrew±íÖĞÌí¼ÓÒ»Ìõ´ò¿¨ĞÅÏ¢
+	//æœªæ‰“å¡å°±æ‰§è¡ŒInsertæŒ‡ä»¤ï¼Œå¾€crewè¡¨ä¸­æ·»åŠ ä¸€æ¡æ‰“å¡ä¿¡æ¯
 	int year_now, mon_now, day_now, hour_now, min_now, sec_now;
-	GetToday(year_now, mon_now, day_now, hour_now, min_now, sec_now);//»ñÈ¡µ±Ç°ÈÕÆÚ
+	GetToday(year_now, mon_now, day_now, hour_now, min_now, sec_now);//è·å–å½“å‰æ—¥æœŸ
 	query = "insert crew(name,time,clock_in) values (" + (string)"\'" + managername + (string)"\'" + "," + (string)"\'" + to_string(year_now)  + "-" +  to_string(mon_now) + "-" + to_string(day_now) + (string)"\'" + "," + "1)";
-	mysql_query(&mysql, "set names gbk"); //ÉèÖÃ±àÂë¸ñÊ½£¨SET NAMES GBKÒ²ĞĞ£©£¬·ñÔòcmdÏÂÖĞÎÄÂÒÂë  
-	//·µ»Ø0 ²éÑ¯³É¹¦£¬·µ»Ø1²éÑ¯Ê§°Ü  
-	if (mysql_query(&mysql, query.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	mysql_query(&mysql, "set names gbk"); //è®¾ç½®ç¼–ç æ ¼å¼ï¼ˆSET NAMES GBKä¹Ÿè¡Œï¼‰ï¼Œå¦åˆ™cmdä¸‹ä¸­æ–‡ä¹±ç   
+	//è¿”å›0 æŸ¥è¯¢æˆåŠŸï¼Œè¿”å›1æŸ¥è¯¢å¤±è´¥  
+	if (mysql_query(&mysql, query.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
 	else
 	{
-		cout << managername + "´ò¿¨³É¹¦" << endl;
+		cout << managername + "æ‰“å¡æˆåŠŸ" << endl;
 	}
 	return true;
 }
 
-//³äµ±Ò»¼¶±í£¬ÓÃÓÚ¶ş¼¶±íµÄ¹¤Ê±¿Û³ıÓ³Éä
+//å……å½“ä¸€çº§è¡¨ï¼Œç”¨äºäºŒçº§è¡¨çš„å·¥æ—¶æ‰£é™¤æ˜ å°„
 bool AddPerson(string managername ,string crewname)
 {
-	//×¢ÒâÈÃĞÂÔöµÄ×Ö¶ÎÎªnot null²¢ÇÒÉèÖÃ·Ç¿ÕÄ¬ÈÏÖµ£¬·ñÔònullÖµµÄ×Ö¶ÎÎŞ·¨updateµÄ£¨Èç¹ûÄãÒªÁ¢¿Ì¸ÄÕâ¸öĞÂÔö×Ö¶ÎµÄ»°£©
+	//æ³¨æ„è®©æ–°å¢çš„å­—æ®µä¸ºnot nullå¹¶ä¸”è®¾ç½®éç©ºé»˜è®¤å€¼ï¼Œå¦åˆ™nullå€¼çš„å­—æ®µæ— æ³•updateçš„ï¼ˆå¦‚æœä½ è¦ç«‹åˆ»æ”¹è¿™ä¸ªæ–°å¢å­—æ®µçš„è¯ï¼‰
 	int count = 0;
 	MYSQL_ROW reserved = column;
 	string query_tmp = "select COLUMN_NAME from INFORMATION_SCHEMA.Columns where table_name= " + (string)"\'" + managername + (string)"\'";
 	mysql_query(&mysql, "set names gbk");
-	if (mysql_query(&mysql, query_tmp.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, query_tmp.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
-	//»ñÈ¡±íÖĞËùÓĞµÄ×Ö¶ÎÃû×Ö
-	if (!(res = mysql_store_result(&mysql)))    //»ñµÃsqlÓï¾ä½áÊøºó·µ»ØµÄ½á¹û¼¯  
+	//è·å–è¡¨ä¸­æ‰€æœ‰çš„å­—æ®µåå­—
+	if (!(res = mysql_store_result(&mysql)))    //è·å¾—sqlè¯­å¥ç»“æŸåè¿”å›çš„ç»“æœé›†  
 	{
 		printf("Couldn't get result from %s\n", mysql_error(&mysql));
 		return false;
 	}
-	//²»¼ì²éÊÇ·ñÎª¿Õ£¬ÒòÎªÃ»ÓĞ¾Í¿ÉÒÔÌí¼Ó
-	while (column = mysql_fetch_row(res))   //»ñÈ¡×îĞÂÒ»ĞĞ 
+	//ä¸æ£€æŸ¥æ˜¯å¦ä¸ºç©ºï¼Œå› ä¸ºæ²¡æœ‰å°±å¯ä»¥æ·»åŠ 
+	while (column = mysql_fetch_row(res))   //è·å–æœ€æ–°ä¸€è¡Œ 
 	{
 		count++;
 		reserved = column;
 	}
-	string last = *reserved;	//»ñÈ¡×îºóÒ»¸öÔ±¹¤µÄ±àºÅ
+	string last = *reserved;	//è·å–æœ€åä¸€ä¸ªå‘˜å·¥çš„ç¼–å·
 	int number = 0;
-	//¼ÆËã³öÏÂÒ»¸öĞÂÔ±¹¤µÄ±àºÅ
+	//è®¡ç®—å‡ºä¸‹ä¸€ä¸ªæ–°å‘˜å·¥çš„ç¼–å·
 	size_t pos = last.find("_");
 	for (; pos<last.size()-1; pos++)
 	{
 		number = number * 10 + last[pos + 1] - '0';
 	}
-	//Ìí¼ÓÒ»¸öÔ±¹¤¼°Æä±àºÅ
+	//æ·»åŠ ä¸€ä¸ªå‘˜å·¥åŠå…¶ç¼–å·
 	query = "alter table " + managername + " add p_" + to_string(number + 1) + " varchar(12) not null default \"HELLO\"";
-	if (mysql_query(&mysql, query.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, query.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
 	string query1 = "update " + managername + " set p_" + to_string(number + 1) + "= " + (string)"\'" + crewname + (string)"\'";
-	if (mysql_query(&mysql, query1.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	if (mysql_query(&mysql, query1.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
@@ -464,12 +468,12 @@ bool Show(string tablename)
 	string time = to_string(year) + "-" + to_string(mon) + "-" + to_string(day);
 
 	string query_show = "select * from " + tablename + " where time = \'" + time + "\'";
-	mysql_query(&mysql, "set names gbk"); //ÉèÖÃ±àÂë¸ñÊ½£¨SET NAMES GBKÒ²ĞĞ£©£¬·ñÔòcmdÏÂÖĞÎÄÂÒÂë  
-	if (mysql_query(&mysql, query_show.c_str())) {        // Ö´ĞĞÖ¸¶¨ÎªÒ»¸ö¿Õ½áÎ²µÄ×Ö·û´®µÄSQL²éÑ¯¡£	
+	mysql_query(&mysql, "set names gbk"); //è®¾ç½®ç¼–ç æ ¼å¼ï¼ˆSET NAMES GBKä¹Ÿè¡Œï¼‰ï¼Œå¦åˆ™cmdä¸‹ä¸­æ–‡ä¹±ç   
+	if (mysql_query(&mysql, query_show.c_str())) {        // æ‰§è¡ŒæŒ‡å®šä¸ºä¸€ä¸ªç©ºç»“å°¾çš„å­—ç¬¦ä¸²çš„SQLæŸ¥è¯¢ã€‚	
 		cout << "Query failed" + (string)":" + (string)mysql_error(&mysql) << endl;
 		return false;
 	}
-	if (!(ALL_RES = mysql_store_result(&mysql)))    //»ñµÃsqlÓï¾ä½áÊøºó·µ»ØµÄ½á¹û¼¯  
+	if (!(ALL_RES = mysql_store_result(&mysql)))    //è·å¾—sqlè¯­å¥ç»“æŸåè¿”å›çš„ç»“æœé›†  
 	{
 		printf("Couldn't get result from %s\n", mysql_error(&mysql));
 		return false;
